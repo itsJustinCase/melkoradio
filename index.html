@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MelkoRadio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#2e3033;--card:#3b3e42;--text:#f2f2f2;--muted:#b8bcc2;--accent:#f97316;--accent-text:#1a1208;--line:#53575d;--ok:#4ade80;--bad:#f87171;--star:#facc15;color-scheme:dark;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:20px;padding-bottom:130px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 16px 8px;max-width:640px;margin:0 auto}
+h1{font-size:28px;margin:0}
+#bt{display:flex;align-items:center;gap:8px;border:2px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:10px 16px;font-size:18px;font-weight:600;cursor:pointer}
+#bt svg{width:26px;height:26px}
+#bt .dot{width:14px;height:14px;border-radius:50%;background:var(--muted)}
+#bt.on .dot{background:var(--ok)}#bt.off .dot{background:var(--bad)}
+main{max-width:640px;margin:0 auto;padding:0 16px}
+h2{font-size:16px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:20px 4px 8px}
+.row{display:flex;align-items:stretch;background:var(--card);border:2px solid var(--line);border-radius:18px;margin-bottom:10px;overflow:hidden}
+.row.active{border-color:var(--accent)}
+.play{flex:1;display:flex;align-items:center;gap:14px;text-align:left;background:none;border:0;color:var(--text);padding:12px 14px;font:inherit;cursor:pointer;min-height:76px}
+.ic{flex:none;width:52px;height:52px;border-radius:50%;background:var(--accent);color:var(--accent-text);display:grid;place-items:center}
+.ic svg{width:26px;height:26px;fill:currentColor}
+.name{font-weight:700;font-size:22px;line-height:1.2}
+.sub{font-size:17px;color:var(--muted);margin-top:2px}
+.flag{font-size:24px;vertical-align:-3px;margin-left:6px}
+.fav{flex:none;width:72px;background:none;border:0;border-left:2px solid var(--line);cursor:pointer;display:grid;place-items:center}
+.fav svg{width:36px;height:36px;fill:none;stroke:var(--muted);stroke-width:2}
+.fav.on svg{fill:var(--star);stroke:var(--star)}
+#bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:2px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));display:none}
+#bar.show{display:block}
+#bar .in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:14px}
+#bar .t{flex:1;min-width:0}
+#bar .l{font-size:15px;color:var(--muted)}
+#bar .n{font-size:22px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#bar .n.err{color:var(--bad);white-space:normal}
+#stop{flex:none;background:var(--accent);color:var(--accent-text);border:0;border-radius:16px;padding:14px 22px;font-size:20px;font-weight:700;display:flex;gap:8px;align-items:center;cursor:pointer}
+#stop svg{width:22px;height:22px;fill:currentColor}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:5}
+#modal.show{display:flex}
+#modal .box{background:var(--card);border-radius:20px;padding:24px;max-width:420px;width:100%}
+#modal h3{margin:0 0 12px;font-size:24px}
+#modal ol{padding-left:24px;line-height:1.5;margin:0 0 18px}
+#modal button{width:100%;background:var(--accent);color:var(--accent-text);border:0;border-radius:14px;padding:16px;font-size:20px;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <h1>MelkoRadio</h1>
+  <button id="bt" aria-label="Speaker connection">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10-5 5V2l5 5L7 17"/></svg>
+    <span id="btt">Speaker</span><span class="dot"></span>
+  </button>
+</header>
+<main id="list"></main>
+
+<div id="bar"><div class="in">
+  <div class="t"><div class="l" id="state">Now playing</div><div class="n" id="now"></div></div>
+  <button id="stop"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>Stop</button>
+</div></div>
+
+<div id="modal"><div class="box">
+  <h3>Connect your speaker</h3>
+  <ol>
+    <li>Switch your speaker on.</li>
+    <li>Open your phone’s <b>Settings</b>, then <b>Bluetooth</b>.</li>
+    <li>Tap the speaker’s name to connect.</li>
+    <li>Come back here and press a station.</li>
+  </ol>
+  <button id="ok">OK</button>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.8/hls.min.js"></script>
+<script>
+const STATIONS=[
+["MT","MT 89.7","https://stream.v3.network/proxy/897bay/stream.mp3?_=1"],
+["MT","MT Magic Malta","https://s46.myradiostream.com:6076/;_=1"],
+["FR","FR FIP","https://icecast.radiofrance.fr/fip-midfi.mp3?_=1"],
+["FR","FR FIP Jazz","https://icecast.radiofrance.fr/fipjazz-midfi.mp3?id=radiofrance?_=1"],
+["FR","FR Musique Classique","https://stream.radiofrance.fr/francemusiqueclassiqueplus/francemusiqueclassiqueplus_hifi.m3u8?_=1"],
+["CH","CH Couleur 3","http://stream.srg-ssr.ch/m/couleur3/mp3_128?_=1"],
+["UA","UA City FM","http://listen2.myradio24.com:9000/8338?_=1"],
+["UA","UA Lounge","https://cast.mediaonline.net.ua/acoustic320?_=1"],
+["UA","UA Hit FM","https://tavr.tvstitch.com/HitFM?_=1"],
+["UA","UA Shanson","https://cast.brg.ua/shanson_main_public_mp3_hq?_=1"],
+["UA","UA Melodia","https://streamurl.link/station/melodia-fm-ukraine/?_=1"],
+["DE","DE Radio Cafe Zimmermann","https://stream.radio-cafezimmermann.de/klassik/mp3-192/?_=1"]
+].map(([c,full,url])=>({id:full,country:c,name:full.slice(3),full,url}));
+const COUNTRY={MT:"Malta",FR:"France",CH:"Switzerland",UA:"Ukraine",DE:"Germany"};
+const FLAG={MT:"🇲🇹",FR:"🇫🇷",CH:"🇨🇭",UA:"🇺🇦",DE:"🇩🇪"};
+const $=id=>document.getElementById(id);
+let favs=[];try{favs=JSON.parse(localStorage.getItem("mr-favs")||"[]")}catch(e){}
+function saveFavs(){try{localStorage.setItem("mr-favs",JSON.stringify(favs))}catch(e){}}
+const audio=new Audio();audio.preload="none";
+let current=null,hls=null;
+
+const PLAY='<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+const BARS='<svg viewBox="0 0 24 24"><rect x="4" y="8" width="3.5" height="12" rx="1"/><rect x="10.25" y="4" width="3.5" height="16" rx="1"/><rect x="16.5" y="10" width="3.5" height="10" rx="1"/></svg>';
+const STAR='<svg viewBox="0 0 24 24"><path stroke-linejoin="round" d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>';
+
+function row(s){
+  const on=favs.includes(s.id),act=current&&current.id===s.id;
+  const d=document.createElement("div");d.className="row"+(act?" active":"");
+  d.innerHTML=`<button class="play" aria-label="Play ${s.name}"><span class="ic">${act?BARS:PLAY}</span><span><div class="name"></div><div class="sub">${COUNTRY[s.country]}<span class="flag">${FLAG[s.country]}</span></div></span></button>`+
+  `<button class="fav${on?" on":""}" aria-label="${on?"Remove from favourites":"Add to favourites"}">${STAR}</button>`;
+  d.querySelector(".name").textContent=s.name;
+  d.querySelector(".play").onclick=()=>toggle(s);
+  d.querySelector(".fav").onclick=()=>{favs=on?favs.filter(x=>x!==s.id):[...favs,s.id];saveFavs();render()};
+  return d;
+}
+function render(){
+  const L=$("list");L.innerHTML="";
+  const sorted=[...STATIONS].sort((a,b)=>a.full.localeCompare(b.full));
+  const f=sorted.filter(s=>favs.includes(s.id)),rest=sorted.filter(s=>!favs.includes(s.id));
+  if(f.length){const h=document.createElement("h2");h.textContent="★ Favourites";L.append(h);f.forEach(s=>L.append(row(s)))}
+  const h=document.createElement("h2");h.textContent=f.length?"All stations":"Stations";L.append(h);
+  rest.forEach(s=>L.append(row(s)));
+}
+function setBar(label,text,err){
+  $("bar").classList.add("show");$("state").textContent=label;
+  $("now").textContent=text;$("now").className="n"+(err?" err":"");
+}
+function cleanup(){if(hls){hls.destroy();hls=null}}
+function toggle(s){
+  if(current&&current.id===s.id){stop();return}
+  cleanup();current=s;render();setBar("Starting…",s.name);
+  let url=s.url;
+  try{
+    if(url.includes(".m3u8")&&!audio.canPlayType("application/vnd.apple.mpegurl")&&window.Hls&&Hls.isSupported()){
+      hls=new Hls();hls.loadSource(url);hls.attachMedia(audio);
+    }else{audio.src=url}
+    audio.play().catch(fail);
+  }catch(e){fail()}
+  if("mediaSession"in navigator){
+    navigator.mediaSession.metadata=new MediaMetadata({title:s.name,artist:"MelkoRadio",album:COUNTRY[s.country]});
+    navigator.mediaSession.setActionHandler("play",()=>audio.play());
+    navigator.mediaSession.setActionHandler("pause",()=>stop());
+    navigator.mediaSession.setActionHandler("stop",()=>stop());
+  }
+}
+function fail(){
+  if(!current)return;
+  setBar("Sorry, this station is not available right now",current.name,true);
+}
+function stop(){
+  audio.pause();cleanup();audio.removeAttribute("src");audio.load();
+  current=null;$("bar").classList.remove("show");render();
+}
+audio.addEventListener("playing",()=>current&&setBar("Now playing",current.name));
+audio.addEventListener("waiting",()=>current&&setBar("Loading…",current.name));
+audio.addEventListener("error",()=>current&&fail());
+$("stop").onclick=stop;
+
+// Speaker / Bluetooth
+async function checkBt(){
+  const b=$("bt");
+  try{
+    if(!navigator.mediaDevices||!navigator.mediaDevices.enumerateDevices)throw 0;
+    const dv=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==="audiooutput");
+    const hit=dv.some(d=>/bluetooth|speaker|jbl|bose|sony|ue |boom|soundcore|anker|marshall/i.test(d.label));
+    if(hit){b.className="on";$("btt").textContent="Connected";return}
+    if(dv.some(d=>d.label)){b.className="off";$("btt").textContent="Not connected";return}
+  }catch(e){}
+  b.className="";$("btt").textContent="Speaker";
+}
+$("bt").onclick=()=>{
+  if(/Android/i.test(navigator.userAgent)){
+    location.href="intent:#Intent;action=android.settings.BLUETOOTH_SETTINGS;end";
+    setTimeout(()=>$("modal").classList.add("show"),700);
+  }else $("modal").classList.add("show");
+};
+$("ok").onclick=()=>{$("modal").classList.remove("show");checkBt()};
+if(navigator.mediaDevices&&navigator.mediaDevices.addEventListener)navigator.mediaDevices.addEventListener("devicechange",checkBt);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkBt()});
+render();checkBt();
+</script>
+</body>
+</html>
