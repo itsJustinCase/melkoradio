@@ -51,7 +51,7 @@ h2{font-size:16px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute
   <h1>MelkoRadio</h1>
   <button id="bt" aria-label="Speaker connection">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10-5 5V2l5 5L7 17"/></svg>
-    <span id="btt">Speaker</span><span class="dot"></span>
+    <span id="btt">Connect speaker</span>
   </button>
 </header>
 <main id="list"></main>
@@ -154,7 +154,7 @@ audio.addEventListener("error",()=>current&&fail());
 $("stop").onclick=stop;
 
 // Speaker / Bluetooth
-async function checkBt(){
+async function checkBt(){return;
   const b=$("bt");
   try{
     if(!navigator.mediaDevices||!navigator.mediaDevices.enumerateDevices)throw 0;
