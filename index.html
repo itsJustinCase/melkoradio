@@ -120,6 +120,24 @@ function render(){
   if(f.length){const h=document.createElement("h2");h.textContent="★ Favourites";L.append(h);f.forEach(s=>L.append(row(s)))}
   const h=document.createElement("h2");h.textContent=f.length?"All stations":"Stations";L.append(h);
   rest.forEach(s=>L.append(row(s)));
+  updateNav();
+}
+function favList(){return STATIONS.filter(s=>favs.includes(s.id)).sort((a,b)=>a.full.localeCompare(b.full))}
+function step(d){
+  const f=favList();if(f.length<2)return;
+  let i=current?f.findIndex(s=>s.id===current.id):-1;
+  i=i<0?(d>0?0:f.length-1):(i+d+f.length)%f.length;
+  toggle(f[i]);
+}
+function updateNav(){
+  if(!("mediaSession"in navigator))return;
+  const on=favs.length>=2;
+  try{
+    navigator.mediaSession.setActionHandler("previoustrack",on?()=>step(-1):null);
+    navigator.mediaSession.setActionHandler("nexttrack",on?()=>step(1):null);
+    navigator.mediaSession.setActionHandler("seekbackward",null);
+    navigator.mediaSession.setActionHandler("seekforward",null);
+  }catch(e){}
 }
 function setBar(label,text,err){
   $("bar").classList.add("show");$("state").textContent=label;
