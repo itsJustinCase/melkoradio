@@ -86,11 +86,13 @@ const STATIONS=[
 ["UA","UA Hit FM","https://tavr.tvstitch.com/HitFM?_=1"],
 ["UA","UA Shanson","https://cast.brg.ua/shanson_main_public_mp3_hq?_=1"],
 ["UA","UA Melodia","https://streamurl.link/station/melodia-fm-ukraine/?_=1"],
-["DE","DE Radio Cafe Zimmermann","https://stream.radio-cafezimmermann.de/klassik/mp3-192/?_=1"]
+["DE","DE Radio Cafe Zimmermann","https://stream.radio-cafezimmermann.de/klassik/mp3-192/?_=1"],
+["US","US Houston Blues Radio","https://ais-edge90-dal03.cdnstream.com/2158_128.mp3"]
 ].map(([c,full,url])=>({id:full,country:c,name:full.slice(3),full,url}));
-const COUNTRY={MT:"Malta",FR:"France",CH:"Switzerland",UA:"Ukraine",DE:"Germany"};
+const COUNTRY={MT:"Malta",FR:"France",CH:"Switzerland",UA:"Ukraine",DE:"Germany",US:"USA"};
 const FLAG={MT:"🇲🇹",FR:"🇫🇷",CH:"🇨🇭",UA:"🇺🇦",DE:"🇩🇪"};
 const $=id=>document.getElementById(id);
+FLAG.US="🇺🇸";
 let favs=[];try{favs=JSON.parse(localStorage.getItem("mr-favs")||"[]")}catch(e){}
 function saveFavs(){try{localStorage.setItem("mr-favs",JSON.stringify(favs))}catch(e){}}
 const audio=new Audio();audio.preload="none";
