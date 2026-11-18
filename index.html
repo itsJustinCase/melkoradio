@@ -66,6 +66,16 @@ h2{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--hh,66px));z-ind
 #tm .g button,#tm .x{font:inherit;font-size:21px;font-weight:700;padding:18px 8px;border-radius:16px;border:2px solid var(--accent);background:none;color:var(--text);cursor:pointer}
 #tm .x{width:100%;margin-top:10px;border-color:var(--line);font-size:19px;padding:14px}
 #tm .off{width:100%;margin-top:10px;background:var(--accent);color:var(--accent-text)}
+#um{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+#um.show{display:flex}
+#um .box{background:var(--card);border-radius:22px;padding:22px;max-width:420px;width:100%}
+#um h3{margin:0 0 8px;font-size:26px}
+#um label{display:block;color:var(--muted);margin:12px 0 6px}
+#um input{width:100%;font:inherit;font-size:19px;padding:14px;border-radius:14px;border:2px solid var(--line);background:var(--bg);color:var(--text)}
+#um .x{width:100%;margin-top:12px;font:inherit;font-size:20px;font-weight:700;padding:15px;border-radius:16px;border:2px solid var(--line);background:none;color:var(--text);cursor:pointer}
+#um .sv{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+#ue{color:var(--bad);margin-top:10px}
+.surl{background:none;border:2px solid var(--line);border-radius:10px;color:var(--text);font:inherit;font-size:16px;padding:4px 10px;cursor:pointer}
 #toast{position:fixed;left:16px;right:16px;bottom:120px;z-index:30;max-width:440px;margin:0 auto;background:var(--card);border:2px solid var(--accent);border-radius:16px;padding:16px;font-weight:700;text-align:center;display:none}
 #toast.show{display:block}
 </style>
@@ -105,14 +115,22 @@ h2{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--hh,66px));z-ind
   <button class="x off" id="toff" data-i="toff"></button>
   <button class="x" id="tclose" data-i="close"></button>
 </div></div>
+<div id="um"><div class="box">
+  <h3 id="umt"></h3>
+  <label for="un" data-i="fname"></label><input id="un" type="text" autocomplete="off">
+  <label for="uu">Stream URL</label><input id="uu" type="url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://…">
+  <div id="ue"></div>
+  <button class="x sv" id="usave" data-i="save"></button>
+  <button class="x" id="ucancel" data-i="cancel"></button>
+</div></div>
 <div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.8/hls.min.js"></script>
 <script>
 const T={
-en:{search:"Search",back:"← Back to stations",ph:"Station name, e.g. Jazz",stop:"Stop",favs:"★ Favourites",all:"All stations",sts:"Stations",rm:"Remove",rmq:n=>`Remove ${n} from your list?`,now:"Now playing",start:"Starting…",load:"Loading…",err:"Sorry, this station is not available right now",sprompt:"Type a station name and press Search.",searching:"Searching…",found:n=>`${n} stations found`,none:"No stations found. Try another name.",offline:"Couldn’t reach the station directory. Please check your internet and try again.",listen:"▶ Listen",add:"★ Add",added:"✓ Added",world:"World",tmt:"Sleep timer",tmp:"Stop the radio after:",toff:"Turn off timer",close:"Close",min:"min",left:m=>`Radio stops in ${m} min.`,tend:"Sleep timer ended. Radio stopped.",opts:["15 minutes","30 minutes","45 minutes","1 hour","1 h 30","2 hours"],fav1:"Add to favourites",fav0:"Remove from favourites"},
-fr:{search:"Rechercher",back:"← Retour aux stations",ph:"Nom de la station, ex. Jazz",stop:"Arrêter",favs:"★ Favoris",all:"Toutes les stations",sts:"Stations",rm:"Supprimer",rmq:n=>`Supprimer ${n} de votre liste ?`,now:"En cours de lecture",start:"Démarrage…",load:"Chargement…",err:"Désolé, cette station n’est pas disponible pour le moment",sprompt:"Saisissez un nom de station puis appuyez sur Rechercher.",searching:"Recherche…",found:n=>`${n} stations trouvées`,none:"Aucune station trouvée. Essayez un autre nom.",offline:"Impossible d’accéder à l’annuaire. Vérifiez votre connexion et réessayez.",listen:"▶ Écouter",add:"★ Ajouter",added:"✓ Ajoutée",world:"Monde",tmt:"Minuterie de sommeil",tmp:"Arrêter la radio dans :",toff:"Annuler la minuterie",close:"Fermer",min:"min",left:m=>`La radio s’arrêtera dans ${m} min.`,tend:"Minuterie terminée. Radio arrêtée.",opts:["15 minutes","30 minutes","45 minutes","1 heure","1 h 30","2 heures"],fav1:"Ajouter aux favoris",fav0:"Retirer des favoris"},
-uk:{search:"Пошук",back:"← Назад до станцій",ph:"Назва станції, напр. Jazz",stop:"Стоп",favs:"★ Улюблені",all:"Усі станції",sts:"Станції",rm:"Видалити",rmq:n=>`Видалити ${n} зі списку?`,now:"Зараз грає",start:"Запуск…",load:"Завантаження…",err:"На жаль, ця станція зараз недоступна",sprompt:"Введіть назву станції та натисніть «Пошук».",searching:"Пошук…",found:n=>`Знайдено станцій: ${n}`,none:"Станцій не знайдено. Спробуйте іншу назву.",offline:"Не вдалося зв’язатися з каталогом. Перевірте інтернет і спробуйте ще раз.",listen:"▶ Слухати",add:"★ Додати",added:"✓ Додано",world:"Світ",tmt:"Таймер сну",tmp:"Вимкнути радіо через:",toff:"Скасувати таймер",close:"Закрити",min:"хв",left:m=>`Радіо вимкнеться через ${m} хв.`,tend:"Таймер завершено. Радіо вимкнено.",opts:["15 хвилин","30 хвилин","45 хвилин","1 година","1 год 30 хв","2 години"],fav1:"Додати в улюблені",fav0:"Прибрати з улюблених"}
+en:{search:"Search",back:"← Back to stations",ph:"Station name, e.g. Jazz",stop:"Stop",favs:"★ Favourites",all:"All stations",sts:"Stations",rm:"Remove",rmq:n=>`Remove ${n} from your list?`,now:"Now playing",start:"Starting…",load:"Loading…",err:"Sorry, this station is not available right now",sprompt:"Type a station name and press Search.",searching:"Searching…",found:n=>`${n} stations found`,none:"No results. Try another name or add a feed URL.",addurl:"Add a feed URL",edittitle:"Edit feed",fname:"Station name",save:"Save",cancel:"Cancel",badf:"Please enter a name and a web address starting with http:// or https://",offline:"Couldn’t reach the station directory. Please check your internet and try again.",listen:"▶ Listen",add:"★ Add",added:"✓ Added",world:"World",tmt:"Sleep timer",tmp:"Stop the radio after:",toff:"Turn off timer",close:"Close",min:"min",left:m=>`Radio stops in ${m} min.`,tend:"Sleep timer ended. Radio stopped.",opts:["15 minutes","30 minutes","45 minutes","1 hour","1 h 30","2 hours"],fav1:"Add to favourites",fav0:"Remove from favourites"},
+fr:{search:"Rechercher",back:"← Retour aux stations",ph:"Nom de la station, ex. Jazz",stop:"Arrêter",favs:"★ Favoris",all:"Toutes les stations",sts:"Stations",rm:"Supprimer",rmq:n=>`Supprimer ${n} de votre liste ?`,now:"En cours de lecture",start:"Démarrage…",load:"Chargement…",err:"Désolé, cette station n’est pas disponible pour le moment",sprompt:"Saisissez un nom de station puis appuyez sur Rechercher.",searching:"Recherche…",found:n=>`${n} stations trouvées`,none:"Aucun résultat. Essayez un autre nom ou ajoutez l’URL d’un flux.",addurl:"Ajouter l’URL d’un flux",edittitle:"Modifier le flux",fname:"Nom de la station",save:"Enregistrer",cancel:"Annuler",badf:"Saisissez un nom et une adresse web commençant par http:// ou https://",offline:"Impossible d’accéder à l’annuaire. Vérifiez votre connexion et réessayez.",listen:"▶ Écouter",add:"★ Ajouter",added:"✓ Ajoutée",world:"Monde",tmt:"Minuterie de sommeil",tmp:"Arrêter la radio dans :",toff:"Annuler la minuterie",close:"Fermer",min:"min",left:m=>`La radio s’arrêtera dans ${m} min.`,tend:"Minuterie terminée. Radio arrêtée.",opts:["15 minutes","30 minutes","45 minutes","1 heure","1 h 30","2 heures"],fav1:"Ajouter aux favoris",fav0:"Retirer des favoris"},
+uk:{search:"Пошук",back:"← Назад до станцій",ph:"Назва станції, напр. Jazz",stop:"Стоп",favs:"★ Улюблені",all:"Усі станції",sts:"Станції",rm:"Видалити",rmq:n=>`Видалити ${n} зі списку?`,now:"Зараз грає",start:"Запуск…",load:"Завантаження…",err:"На жаль, ця станція зараз недоступна",sprompt:"Введіть назву станції та натисніть «Пошук».",searching:"Пошук…",found:n=>`Знайдено станцій: ${n}`,none:"Немає результатів. Спробуйте іншу назву або додайте URL потоку.",addurl:"Додати URL потоку",edittitle:"Редагувати потік",fname:"Назва станції",save:"Зберегти",cancel:"Скасувати",badf:"Введіть назву та веб-адресу, що починається з http:// або https://",offline:"Не вдалося зв’язатися з каталогом. Перевірте інтернет і спробуйте ще раз.",listen:"▶ Слухати",add:"★ Додати",added:"✓ Додано",world:"Світ",tmt:"Таймер сну",tmp:"Вимкнути радіо через:",toff:"Скасувати таймер",close:"Закрити",min:"хв",left:m=>`Радіо вимкнеться через ${m} хв.`,tend:"Таймер завершено. Радіо вимкнено.",opts:["15 хвилин","30 хвилин","45 хвилин","1 година","1 год 30 хв","2 години"],fav1:"Додати в улюблені",fav0:"Прибрати з улюблених"}
 };
 const MINS=[15,30,45,60,90,120];
 let lang="en";
@@ -144,6 +162,7 @@ function saveCustom(){try{localStorage.setItem("mr-custom",JSON.stringify(custom
 const all=()=>[...BUILTIN,...custom];
 function flagOf(cc){cc=(cc||"").toUpperCase();return/^[A-Z]{2}$/.test(cc)?String.fromCodePoint(...[...cc].map(c=>127397+c.charCodeAt(0))):"🌐"}
 function cname(s){
+  if(s.manual)return "Stream URL";
   const cc=(s.country||"").toUpperCase();
   if(cc==="US"&&lang==="en")return "USA";
   try{if(/^[A-Z]{2}$/.test(cc)){const n=new Intl.DisplayNames([lang],{type:"region"}).of(cc);if(n&&n!==cc)return n}}catch(e){}
@@ -162,8 +181,13 @@ function row(s){
   d.innerHTML=`<button class="play"><span class="ic">${act?BARS:PLAY}</span><span><div class="name"></div><div class="sub"></div></span></button>`+
   `<button class="fav${on?" on":""}" aria-label="${t(on?"fav0":"fav1")}">${STAR}</button>`;
   d.querySelector(".name").textContent=s.name;
-  const sub=d.querySelector(".sub");sub.append(cname(s));
-  const fl=document.createElement("span");fl.className="flag";fl.textContent=flagOf(s.country);sub.append(fl);
+  const sub=d.querySelector(".sub");if(s.manual){
+    const b=document.createElement("button");b.className="surl";b.textContent="Stream URL ✎";
+    b.onclick=e=>{e.stopPropagation();openFeed(s)};sub.append(b);
+  }else{
+    sub.append(cname(s));
+    const fl=document.createElement("span");fl.className="flag";fl.textContent=flagOf(s.country);sub.append(fl);
+  }
   if(s.custom){
     const rm=document.createElement("button");rm.className="rm";rm.textContent=t("rm");
     rm.onclick=e=>{e.stopPropagation();if(confirm(t("rmq",s.name))){
@@ -269,7 +293,10 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden)tick()});
 // Station search (Radio Browser directory)
 const HOSTS=["https://de1.api.radio-browser.info","https://nl1.api.radio-browser.info","https://at1.api.radio-browser.info"];
 let sst={k:"sprompt"},lastRes=[];
-function paintS(){$("sstat").textContent=sst.k==="found"?t("found",sst.n):t(sst.k)}
+function paintS(){
+  const e=$("sstat");e.textContent=sst.k==="found"?t("found",sst.n):t(sst.k);
+  if(sst.k==="none"){const b=document.createElement("button");b.className="pill";b.style.marginTop="12px";b.textContent="+ "+t("addurl");b.onclick=()=>openFeed(null);e.append(document.createElement("br"),b)}
+}
 $("sb").onclick=()=>{$("search").classList.add("show");setTimeout(()=>$("q").focus(),50)};
 $("back").onclick=()=>$("search").classList.remove("show");
 $("sf").onsubmit=e=>{e.preventDefault();const q=$("q").value.trim();if(q){$("q").blur();runSearch(q)}};
@@ -309,6 +336,27 @@ function showResults(){
     L.append(d);
   });
 }
+
+// Custom feed URL (add or edit)
+let editing=null;
+function openFeed(s){
+  editing=s;$("umt").textContent=t(s?"edittitle":"addurl");
+  $("un").value=s?s.name:"";$("uu").value=s?s.url:"";$("ue").textContent="";
+  $("um").classList.add("show");setTimeout(()=>$("un").focus(),50);
+}
+$("ucancel").onclick=()=>$("um").classList.remove("show");
+$("usave").onclick=()=>{
+  const name=$("un").value.trim(),url=$("uu").value.trim();
+  if(!name||!(url.startsWith("http://")||url.startsWith("https://"))||url.length<12){$("ue").textContent=t("badf");return}
+  if(editing){
+    if(current&&current.id===editing.id)stop();
+    editing.name=name;editing.url=url;editing.full="ZZ "+name;
+  }else{
+    const s={id:"m:"+Date.now(),country:"",countryName:"",name:name,full:"ZZ "+name,url:url,custom:true,manual:true};
+    custom.push(s);favs.push(s.id);
+  }
+  saveCustom();saveFavs();$("um").classList.remove("show");$("search").classList.remove("show");render();
+};
 
 // Language
 function applyLang(){
