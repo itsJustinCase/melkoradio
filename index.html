@@ -5,19 +5,24 @@
 <title>MelkoRadio</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>
-:root{--bg:#2e3033;--card:#3b3e42;--text:#f2f2f2;--muted:#b8bcc2;--accent:#f97316;--accent-text:#1a1208;--line:#53575d;--ok:#4ade80;--bad:#f87171;--star:#facc15;color-scheme:dark;
+:root{--bg:#2e3033;--card:#3b3e42;--text:#f2f2f2;--muted:#b8bcc2;--accent:#f97316;--accent-text:#1a1208;--line:#53575d;--bad:#f87171;--star:#facc15;color-scheme:dark;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:20px;padding-bottom:130px}
-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 16px 8px;max-width:640px;margin:0 auto}
-h1{font-size:28px;margin:0}
-#bt{display:flex;align-items:center;gap:8px;border:2px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:10px 16px;font-size:18px;font-weight:600;cursor:pointer}
-#bt svg{width:26px;height:26px}
-#bt .dot{width:14px;height:14px;border-radius:50%;background:var(--muted)}
-#bt.on .dot{background:var(--ok)}#bt.off .dot{background:var(--bad)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+#top{position:sticky;top:env(safe-area-inset-top,0px);z-index:4;background:var(--bg)}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 10px;padding:10px 14px;max-width:640px;margin:0 auto}
+h1{font-size:23px;margin:0}
+.ctl{display:flex;align-items:center;gap:8px}
+select#lang{font:inherit;font-size:17px;font-weight:700;color:var(--text);background:var(--card);border:2px solid var(--line);border-radius:999px;padding:9px 6px;height:46px}
+.pill{display:flex;align-items:center;gap:6px;border:2px solid var(--accent);background:var(--accent);color:var(--accent-text);border-radius:999px;height:46px;padding:0 14px;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit}
+.pill svg{width:22px;height:22px}
+.pill.ghost{background:var(--card);color:var(--text);border-color:var(--line);padding:0 11px}
+.pill.ghost.on{border-color:var(--accent)}
 main{max-width:640px;margin:0 auto;padding:0 16px}
-h2{font-size:16px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:20px 4px 8px}
+section{margin-bottom:8px}
+h2{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--hh,66px));z-index:3;background:var(--bg);font-size:16px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0;padding:12px 4px 8px}
 .row{display:flex;align-items:stretch;background:var(--card);border:2px solid var(--line);border-radius:18px;margin-bottom:10px;overflow:hidden}
 .row.active{border-color:var(--accent)}
 .play{flex:1;display:flex;align-items:center;gap:14px;text-align:left;background:none;border:0;color:var(--text);padding:12px 14px;font:inherit;cursor:pointer;min-height:76px}
@@ -26,55 +31,96 @@ h2{font-size:16px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute
 .name{font-weight:700;font-size:22px;line-height:1.2}
 .sub{font-size:17px;color:var(--muted);margin-top:2px}
 .flag{font-size:24px;vertical-align:-3px;margin-left:6px}
+.rm{background:none;border:0;color:var(--muted);font:inherit;font-size:15px;text-decoration:underline;padding:6px 0 6px 14px;cursor:pointer}
 .fav{flex:none;width:72px;background:none;border:0;border-left:2px solid var(--line);cursor:pointer;display:grid;place-items:center}
 .fav svg{width:36px;height:36px;fill:none;stroke:var(--muted);stroke-width:2}
 .fav.on svg{fill:var(--star);stroke:var(--star)}
-#bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:2px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));display:none}
+#bar{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--card);border-top:2px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));display:none}
 #bar.show{display:block}
 #bar .in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:14px}
 #bar .t{flex:1;min-width:0}
 #bar .l{font-size:15px;color:var(--muted)}
 #bar .n{font-size:22px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #bar .n.err{color:var(--bad);white-space:normal}
-#stop{flex:none;background:var(--accent);color:var(--accent-text);border:0;border-radius:16px;padding:14px 22px;font-size:20px;font-weight:700;display:flex;gap:8px;align-items:center;cursor:pointer}
+#stop{flex:none;background:var(--accent);color:var(--accent-text);border:0;border-radius:16px;padding:14px 22px;font-size:20px;font-weight:700;display:flex;gap:8px;align-items:center;cursor:pointer;font-family:inherit}
 #stop svg{width:22px;height:22px;fill:currentColor}
-#modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:5}
-#modal.show{display:flex}
-#modal .box{background:var(--card);border-radius:20px;padding:24px;max-width:420px;width:100%}
-#modal h3{margin:0 0 12px;font-size:24px}
-#modal ol{padding-left:24px;line-height:1.5;margin:0 0 18px}
-#modal button{width:100%;background:var(--accent);color:var(--accent-text);border:0;border-radius:14px;padding:16px;font-size:20px;font-weight:700;cursor:pointer}
+#search{position:fixed;inset:0;z-index:5;background:var(--bg);overflow-y:auto;display:none;padding:calc(16px + env(safe-area-inset-top,0px)) 16px 140px}
+#search.show{display:block}
+#search .w{max-width:640px;margin:0 auto}
+.back{background:none;border:0;color:var(--text);font:inherit;font-size:20px;font-weight:700;padding:8px 0;cursor:pointer}
+#sf{display:flex;gap:10px;margin:8px 0 12px}
+#q{flex:1;min-width:0;font:inherit;font-size:20px;padding:14px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--text)}
+#sf button{font:inherit;font-size:20px;font-weight:700;background:var(--accent);color:var(--accent-text);border:0;border-radius:14px;padding:0 16px;cursor:pointer}
+#sstat{color:var(--muted);padding:10px 4px}
+.res{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px}
+.res .btns{display:flex;gap:10px;margin-top:12px}
+.res .btns button{flex:1;font:inherit;font-size:19px;font-weight:700;border-radius:14px;padding:14px 8px;cursor:pointer;border:2px solid var(--accent);background:none;color:var(--text)}
+.res .btns .add{background:var(--accent);color:var(--accent-text)}
+.res .btns .add[disabled]{background:none;color:var(--muted);border-color:var(--line);cursor:default}
+#tm{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:20px}
+#tm.show{display:flex}
+#tm .box{background:var(--card);border-radius:22px;padding:22px;max-width:420px;width:100%}
+#tm h3{margin:0 0 4px;font-size:26px}
+#tm p{margin:0 0 14px;color:var(--muted)}
+#tm .g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#tm .g button,#tm .x{font:inherit;font-size:21px;font-weight:700;padding:18px 8px;border-radius:16px;border:2px solid var(--accent);background:none;color:var(--text);cursor:pointer}
+#tm .x{width:100%;margin-top:10px;border-color:var(--line);font-size:19px;padding:14px}
+#tm .off{width:100%;margin-top:10px;background:var(--accent);color:var(--accent-text)}
+#toast{position:fixed;left:16px;right:16px;bottom:120px;z-index:30;max-width:440px;margin:0 auto;background:var(--card);border:2px solid var(--accent);border-radius:16px;padding:16px;font-weight:700;text-align:center;display:none}
+#toast.show{display:block}
 </style>
 </head>
 <body>
-<header>
+<div id="top"><header>
   <h1>MelkoRadio</h1>
-  <button id="bt" aria-label="Speaker connection">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10-5 5V2l5 5L7 17"/></svg>
-    <span id="btt">Connect speaker</span>
-  </button>
-</header>
+  <div class="ctl">
+    <select id="lang" aria-label="Language"><option value="en">🇬🇧 EN</option><option value="fr">🇫🇷 FR</option><option value="uk">🇺🇦 UA</option></select>
+    <button class="pill ghost" id="tb" aria-label="Sleep timer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/></svg>
+      <span id="tl"></span>
+    </button>
+    <button class="pill" id="sb">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <span data-i="search"></span>
+    </button>
+  </div>
+</header></div>
 <main id="list"></main>
 
-<div id="bar"><div class="in">
-  <div class="t"><div class="l" id="state">Now playing</div><div class="n" id="now"></div></div>
-  <button id="stop"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>Stop</button>
+<div id="search"><div class="w">
+  <button class="back" id="back" data-i="back"></button>
+  <form id="sf"><input id="q" type="search" data-ip="ph" enterkeyhint="search" autocomplete="off"><button type="submit" data-i="search"></button></form>
+  <div id="sstat"></div>
+  <div id="sres"></div>
 </div></div>
 
-<div id="modal"><div class="box">
-  <h3>Connect your speaker</h3>
-  <ol>
-    <li>Switch your speaker on.</li>
-    <li>Open your phone’s <b>Settings</b>, then <b>Bluetooth</b>.</li>
-    <li>Tap the speaker’s name to connect.</li>
-    <li>Come back here and press a station.</li>
-  </ol>
-  <button id="ok">OK</button>
+<div id="bar"><div class="in">
+  <div class="t"><div class="l" id="state"></div><div class="n" id="now"></div></div>
+  <button id="stop"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg><span data-i="stop"></span></button>
 </div></div>
+
+<div id="tm"><div class="box">
+  <h3 data-i="tmt"></h3><p id="tmp"></p>
+  <div class="g" id="tg"></div>
+  <button class="x off" id="toff" data-i="toff"></button>
+  <button class="x" id="tclose" data-i="close"></button>
+</div></div>
+<div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.8/hls.min.js"></script>
 <script>
-const STATIONS=[
+const T={
+en:{search:"Search",back:"← Back to stations",ph:"Station name, e.g. Jazz",stop:"Stop",favs:"★ Favourites",all:"All stations",sts:"Stations",rm:"Remove",rmq:n=>`Remove ${n} from your list?`,now:"Now playing",start:"Starting…",load:"Loading…",err:"Sorry, this station is not available right now",sprompt:"Type a station name and press Search.",searching:"Searching…",found:n=>`${n} stations found`,none:"No stations found. Try another name.",offline:"Couldn’t reach the station directory. Please check your internet and try again.",listen:"▶ Listen",add:"★ Add",added:"✓ Added",world:"World",tmt:"Sleep timer",tmp:"Stop the radio after:",toff:"Turn off timer",close:"Close",min:"min",left:m=>`Radio stops in ${m} min.`,tend:"Sleep timer ended. Radio stopped.",opts:["15 minutes","30 minutes","45 minutes","1 hour","1 h 30","2 hours"],fav1:"Add to favourites",fav0:"Remove from favourites"},
+fr:{search:"Rechercher",back:"← Retour aux stations",ph:"Nom de la station, ex. Jazz",stop:"Arrêter",favs:"★ Favoris",all:"Toutes les stations",sts:"Stations",rm:"Supprimer",rmq:n=>`Supprimer ${n} de votre liste ?`,now:"En cours de lecture",start:"Démarrage…",load:"Chargement…",err:"Désolé, cette station n’est pas disponible pour le moment",sprompt:"Saisissez un nom de station puis appuyez sur Rechercher.",searching:"Recherche…",found:n=>`${n} stations trouvées`,none:"Aucune station trouvée. Essayez un autre nom.",offline:"Impossible d’accéder à l’annuaire. Vérifiez votre connexion et réessayez.",listen:"▶ Écouter",add:"★ Ajouter",added:"✓ Ajoutée",world:"Monde",tmt:"Minuterie de sommeil",tmp:"Arrêter la radio dans :",toff:"Annuler la minuterie",close:"Fermer",min:"min",left:m=>`La radio s’arrêtera dans ${m} min.`,tend:"Minuterie terminée. Radio arrêtée.",opts:["15 minutes","30 minutes","45 minutes","1 heure","1 h 30","2 heures"],fav1:"Ajouter aux favoris",fav0:"Retirer des favoris"},
+uk:{search:"Пошук",back:"← Назад до станцій",ph:"Назва станції, напр. Jazz",stop:"Стоп",favs:"★ Улюблені",all:"Усі станції",sts:"Станції",rm:"Видалити",rmq:n=>`Видалити ${n} зі списку?`,now:"Зараз грає",start:"Запуск…",load:"Завантаження…",err:"На жаль, ця станція зараз недоступна",sprompt:"Введіть назву станції та натисніть «Пошук».",searching:"Пошук…",found:n=>`Знайдено станцій: ${n}`,none:"Станцій не знайдено. Спробуйте іншу назву.",offline:"Не вдалося зв’язатися з каталогом. Перевірте інтернет і спробуйте ще раз.",listen:"▶ Слухати",add:"★ Додати",added:"✓ Додано",world:"Світ",tmt:"Таймер сну",tmp:"Вимкнути радіо через:",toff:"Скасувати таймер",close:"Закрити",min:"хв",left:m=>`Радіо вимкнеться через ${m} хв.`,tend:"Таймер завершено. Радіо вимкнено.",opts:["15 хвилин","30 хвилин","45 хвилин","1 година","1 год 30 хв","2 години"],fav1:"Додати в улюблені",fav0:"Прибрати з улюблених"}
+};
+const MINS=[15,30,45,60,90,120];
+let lang="en";
+try{const l=localStorage.getItem("mr-lang");if(T[l])lang=l}catch(e){}
+const t=(k,...a)=>{const v=(T[lang][k]??T.en[k]);return typeof v==="function"?v(...a):v};
+const $=id=>document.getElementById(id);
+
+const BUILTIN=[
 ["MT","MT 89.7","https://stream.v3.network/proxy/897bay/stream.mp3?_=1"],
 ["MT","MT Magic Malta","https://s46.myradiostream.com:6076/;_=1"],
 ["MT","MT Bay Easy 100.2","https://stream.v3.network/proxy/easy/stream.mp3"],
@@ -90,12 +136,19 @@ const STATIONS=[
 ["DE","DE Radio Cafe Zimmermann","https://stream.radio-cafezimmermann.de/klassik/mp3-192/?_=1"],
 ["US","US Houston Blues Radio","https://ais-edge90-dal03.cdnstream.com/2158_128.mp3"]
 ].map(([c,full,url])=>({id:full,country:c,name:full.slice(3),full,url}));
-const COUNTRY={MT:"Malta",FR:"France",CH:"Switzerland",UA:"Ukraine",DE:"Germany",US:"USA"};
-const FLAG={MT:"🇲🇹",FR:"🇫🇷",CH:"🇨🇭",UA:"🇺🇦",DE:"🇩🇪"};
-const $=id=>document.getElementById(id);
-FLAG.US="🇺🇸";
-let favs=[];try{favs=JSON.parse(localStorage.getItem("mr-favs")||"[]")}catch(e){}
+let favs=[],custom=[];
+try{favs=JSON.parse(localStorage.getItem("mr-favs")||"[]")}catch(e){}
+try{custom=JSON.parse(localStorage.getItem("mr-custom")||"[]")}catch(e){}
 function saveFavs(){try{localStorage.setItem("mr-favs",JSON.stringify(favs))}catch(e){}}
+function saveCustom(){try{localStorage.setItem("mr-custom",JSON.stringify(custom))}catch(e){}}
+const all=()=>[...BUILTIN,...custom];
+function flagOf(cc){cc=(cc||"").toUpperCase();return/^[A-Z]{2}$/.test(cc)?String.fromCodePoint(...[...cc].map(c=>127397+c.charCodeAt(0))):"🌐"}
+function cname(s){
+  const cc=(s.country||"").toUpperCase();
+  if(cc==="US"&&lang==="en")return "USA";
+  try{if(/^[A-Z]{2}$/.test(cc)){const n=new Intl.DisplayNames([lang],{type:"region"}).of(cc);if(n&&n!==cc)return n}}catch(e){}
+  return s.countryName||t("world");
+}
 const audio=new Audio();audio.preload="none";
 let current=null,hls=null;
 
@@ -106,23 +159,35 @@ const STAR='<svg viewBox="0 0 24 24"><path stroke-linejoin="round" d="M12 3l2.7 
 function row(s){
   const on=favs.includes(s.id),act=current&&current.id===s.id;
   const d=document.createElement("div");d.className="row"+(act?" active":"");
-  d.innerHTML=`<button class="play" aria-label="Play ${s.name}"><span class="ic">${act?BARS:PLAY}</span><span><div class="name"></div><div class="sub">${COUNTRY[s.country]}<span class="flag">${FLAG[s.country]}</span></div></span></button>`+
-  `<button class="fav${on?" on":""}" aria-label="${on?"Remove from favourites":"Add to favourites"}">${STAR}</button>`;
+  d.innerHTML=`<button class="play"><span class="ic">${act?BARS:PLAY}</span><span><div class="name"></div><div class="sub"></div></span></button>`+
+  `<button class="fav${on?" on":""}" aria-label="${t(on?"fav0":"fav1")}">${STAR}</button>`;
   d.querySelector(".name").textContent=s.name;
+  const sub=d.querySelector(".sub");sub.append(cname(s));
+  const fl=document.createElement("span");fl.className="flag";fl.textContent=flagOf(s.country);sub.append(fl);
+  if(s.custom){
+    const rm=document.createElement("button");rm.className="rm";rm.textContent=t("rm");
+    rm.onclick=e=>{e.stopPropagation();if(confirm(t("rmq",s.name))){
+      if(current&&current.id===s.id)stop();
+      custom=custom.filter(x=>x.id!==s.id);favs=favs.filter(x=>x!==s.id);saveCustom();saveFavs();render()}};
+    sub.append(rm);
+  }
   d.querySelector(".play").onclick=()=>toggle(s);
   d.querySelector(".fav").onclick=()=>{favs=on?favs.filter(x=>x!==s.id):[...favs,s.id];saveFavs();render()};
   return d;
 }
+function sec(title,items){
+  const s=document.createElement("section"),h=document.createElement("h2");
+  h.textContent=title;s.append(h);items.forEach(x=>s.append(row(x)));return s;
+}
 function render(){
   const L=$("list");L.innerHTML="";
-  const sorted=[...STATIONS].sort((a,b)=>a.full.localeCompare(b.full));
+  const sorted=all().sort((a,b)=>a.full.localeCompare(b.full));
   const f=sorted.filter(s=>favs.includes(s.id)),rest=sorted.filter(s=>!favs.includes(s.id));
-  if(f.length){const h=document.createElement("h2");h.textContent="★ Favourites";L.append(h);f.forEach(s=>L.append(row(s)))}
-  const h=document.createElement("h2");h.textContent=f.length?"All stations":"Stations";L.append(h);
-  rest.forEach(s=>L.append(row(s)));
+  if(f.length)L.append(sec(t("favs"),f));
+  L.append(sec(f.length?t("all"):t("sts"),rest));
   updateNav();
 }
-function favList(){return STATIONS.filter(s=>favs.includes(s.id)).sort((a,b)=>a.full.localeCompare(b.full))}
+function favList(){return all().filter(s=>favs.includes(s.id)).sort((a,b)=>a.full.localeCompare(b.full))}
 function step(d){
   const f=favList();if(f.length<2)return;
   let i=current?f.findIndex(s=>s.id===current.id):-1;
@@ -139,15 +204,14 @@ function updateNav(){
     navigator.mediaSession.setActionHandler("seekforward",null);
   }catch(e){}
 }
-function setBar(label,text,err){
-  $("bar").classList.add("show");$("state").textContent=label;
-  $("now").textContent=text;$("now").className="n"+(err?" err":"");
-}
+let bs={k:"now",text:"",err:false};
+function setBar(k,text,err){bs={k,text,err};$("bar").classList.add("show");paintBar()}
+function paintBar(){$("state").textContent=t(bs.k);$("now").textContent=bs.text;$("now").className="n"+(bs.err?" err":"")}
 function cleanup(){if(hls){hls.destroy();hls=null}}
 function toggle(s){
   if(current&&current.id===s.id){stop();return}
-  cleanup();current=s;render();setBar("Starting…",s.name);
-  let url=s.url;
+  cleanup();current=s;render();setBar("start",s.name);
+  const url=s.url;
   try{
     if(url.includes(".m3u8")&&!audio.canPlayType("application/vnd.apple.mpegurl")&&window.Hls&&Hls.isSupported()){
       hls=new Hls();hls.loadSource(url);hls.attachMedia(audio);
@@ -155,47 +219,112 @@ function toggle(s){
     audio.play().catch(fail);
   }catch(e){fail()}
   if("mediaSession"in navigator){
-    navigator.mediaSession.metadata=new MediaMetadata({title:s.name,artist:"MelkoRadio",album:COUNTRY[s.country]});
+    navigator.mediaSession.metadata=new MediaMetadata({title:s.name,artist:"MelkoRadio",album:cname(s)});
     navigator.mediaSession.setActionHandler("play",()=>audio.play());
     navigator.mediaSession.setActionHandler("pause",()=>stop());
     navigator.mediaSession.setActionHandler("stop",()=>stop());
   }
 }
-function fail(){
-  if(!current)return;
-  setBar("Sorry, this station is not available right now",current.name,true);
-}
+function fail(){if(current)setBar("err",current.name,true)}
 function stop(){
   audio.pause();cleanup();audio.removeAttribute("src");audio.load();
   current=null;$("bar").classList.remove("show");render();
 }
-audio.addEventListener("playing",()=>current&&setBar("Now playing",current.name));
-audio.addEventListener("waiting",()=>current&&setBar("Loading…",current.name));
+audio.addEventListener("playing",()=>current&&setBar("now",current.name));
+audio.addEventListener("waiting",()=>current&&setBar("load",current.name));
 audio.addEventListener("error",()=>current&&fail());
+audio.addEventListener("timeupdate",()=>tick());
 $("stop").onclick=stop;
 
-// Speaker / Bluetooth
-async function checkBt(){return;
-  const b=$("bt");
-  try{
-    if(!navigator.mediaDevices||!navigator.mediaDevices.enumerateDevices)throw 0;
-    const dv=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==="audiooutput");
-    const hit=dv.some(d=>/bluetooth|speaker|jbl|bose|sony|ue |boom|soundcore|anker|marshall/i.test(d.label));
-    if(hit){b.className="on";$("btt").textContent="Connected";return}
-    if(dv.some(d=>d.label)){b.className="off";$("btt").textContent="Not connected";return}
-  }catch(e){}
-  b.className="";$("btt").textContent="Speaker";
+// Sleep timer
+let tEnd=0,tInt=null;
+const tLeft=()=>tEnd?Math.max(0,tEnd-Date.now()):0;
+function toast(m){const e=$("toast");e.textContent=m;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),7000)}
+function paintT(){
+  const m=Math.ceil(tLeft()/60000);
+  $("tl").textContent=tEnd?m+" "+t("min"):"";
+  $("tb").classList.toggle("on",!!tEnd);
+  $("tmp").textContent=tEnd?t("left",m):t("tmp");
+  $("toff").style.display=tEnd?"block":"none";
+  setHH();
 }
-$("bt").onclick=()=>{
-  if(/Android/i.test(navigator.userAgent)){
-    location.href="intent:#Intent;action=android.settings.BLUETOOTH_SETTINGS;end";
-    setTimeout(()=>$("modal").classList.add("show"),700);
-  }else $("modal").classList.add("show");
-};
-$("ok").onclick=()=>{$("modal").classList.remove("show");checkBt()};
-if(navigator.mediaDevices&&navigator.mediaDevices.addEventListener)navigator.mediaDevices.addEventListener("devicechange",checkBt);
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkBt()});
-render();checkBt();
+function setTimer(min){
+  tEnd=min?Date.now()+min*60000:0;clearInterval(tInt);
+  if(tEnd)tInt=setInterval(tick,1000);paintT();
+}
+function tick(){
+  if(!tEnd)return;
+  if(Date.now()>=tEnd){const was=!!current;setTimer(0);if(was){stop();toast(t("tend"))}}
+  else paintT();
+}
+function buildTimerButtons(){
+  const g=$("tg");g.innerHTML="";
+  MINS.forEach((m,i)=>{const b=document.createElement("button");b.textContent=t("opts")[i];b.onclick=()=>{setTimer(m);$("tm").classList.remove("show")};g.append(b)});
+}
+$("tb").onclick=()=>{paintT();$("tm").classList.add("show")};
+$("tclose").onclick=()=>$("tm").classList.remove("show");
+$("toff").onclick=()=>{setTimer(0);$("tm").classList.remove("show")};
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)tick()});
+
+// Station search (Radio Browser directory)
+const HOSTS=["https://de1.api.radio-browser.info","https://nl1.api.radio-browser.info","https://at1.api.radio-browser.info"];
+let sst={k:"sprompt"},lastRes=[];
+function paintS(){$("sstat").textContent=sst.k==="found"?t("found",sst.n):t(sst.k)}
+$("sb").onclick=()=>{$("search").classList.add("show");setTimeout(()=>$("q").focus(),50)};
+$("back").onclick=()=>$("search").classList.remove("show");
+$("sf").onsubmit=e=>{e.preventDefault();const q=$("q").value.trim();if(q){$("q").blur();runSearch(q)}};
+async function runSearch(q){
+  lastRes=[];showResults();sst={k:"searching"};paintS();
+  let data=null;
+  for(const h of HOSTS){
+    try{
+      const r=await fetch(`${h}/json/stations/search?name=${encodeURIComponent(q)}&limit=60&hidebroken=true&order=clickcount&reverse=true`);
+      if(!r.ok)continue;data=await r.json();break;
+    }catch(e){}
+  }
+  if(!data){sst={k:"offline"};paintS();return}
+  const seen=new Set();
+  lastRes=data.map(i=>({name:(i.name||"").trim(),url:i.url_resolved||i.url||"",cc:(i.countrycode||"").toUpperCase(),country:i.country||""}))
+    .filter(i=>i.name&&i.url.startsWith("https:")&&!seen.has(i.url)&&seen.add(i.url)).slice(0,20);
+  sst=lastRes.length?{k:"found",n:lastRes.length}:{k:"none"};paintS();showResults();
+}
+function showResults(){
+  const L=$("sres");L.innerHTML="";
+  lastRes.forEach(r=>{
+    const have=()=>all().some(s=>s.url===r.url);
+    const d=document.createElement("div");d.className="res";
+    d.innerHTML='<div class="name"></div><div class="sub"></div><div class="btns"><button class="pv"></button><button class="add"></button></div>';
+    d.querySelector(".name").textContent=r.name;
+    const sub=d.querySelector(".sub");sub.append(cname({country:r.cc,countryName:r.country}));
+    const fl=document.createElement("span");fl.className="flag";fl.textContent=flagOf(r.cc);sub.append(fl);
+    d.querySelector(".pv").textContent=t("listen");
+    const add=d.querySelector(".add");
+    const paint=()=>{add.textContent=t(have()?"added":"add");add.disabled=have()};paint();
+    d.querySelector(".pv").onclick=()=>toggle({id:"p:"+r.url,name:r.name,country:r.cc,countryName:r.country,url:r.url});
+    add.onclick=()=>{
+      if(have())return;
+      const s={id:"c:"+r.url,country:r.cc,countryName:r.country,name:r.name,full:(r.cc||"ZZ")+" "+r.name,url:r.url,custom:true};
+      custom.push(s);favs.push(s.id);saveCustom();saveFavs();render();paint();
+    };
+    L.append(d);
+  });
+}
+
+// Language
+function applyLang(){
+  document.documentElement.lang=lang;$("lang").value=lang;
+  document.querySelectorAll("[data-i]").forEach(e=>e.textContent=t(e.dataset.i));
+  document.querySelectorAll("[data-ip]").forEach(e=>e.placeholder=t(e.dataset.ip));
+  $("tb").setAttribute("aria-label",t("tmt"));
+  buildTimerButtons();paintT();paintS();paintBar();render();showResults();
+}
+$("lang").onchange=e=>{lang=e.target.value;try{localStorage.setItem("mr-lang",lang)}catch(x){}applyLang()};
+
+// Keep section headings just under the sticky header
+function setHH(){document.documentElement.style.setProperty("--hh",$("top").offsetHeight+"px")}
+if(window.ResizeObserver)new ResizeObserver(setHH).observe($("top"));
+addEventListener("resize",setHH);
+applyLang();setHH();
 </script>
 </body>
 </html>
